@@ -1,15 +1,22 @@
+
 """
 Flask Documentation:     http://flask.pocoo.org/docs/
 Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
-
+import os
 from app import app
+from flask import jsonify
 from flask import render_template, request
+from app.forms import UploadForm
+from werkzeug.utils import secure_filename
+from app.__init__ import UPLOAD_FOLDER
 
 ###
 # Routing for your application.
+
+
 ###
 
 
@@ -23,7 +30,6 @@ def index(path):
     Because we use HTML5 history mode in vue-router we need to configure our
     web server to redirect all routes to index.html. Hence the additional route
     "/<path:path".
-
     Also we will render the initial webpage and then let VueJS take control.
     """
     return render_template('index.html')
@@ -44,6 +50,32 @@ def form_errors(form):
 
     return error_messages
 
+@app.route("/api/upload", methods=['POST'])
+def upload():
+    filefolder = UPLOAD_FOLDER
+    # Instantiate your form class
+    # Validate file upload on submit
+    form = UploadForm()
+    if request.method == 'POST' and form.validate_on_submit():
+        # Get file data and save to your uploads folder
+        file = request.files.get('file')
+        
+        description = form.description.data
+        #print(description)
+        filename = secure_filename(form.photo.data.filename)
+        #print(filename)
+        form.photo.data.save(os.path.join(filefolder, filename))
+        tasks =[{
+            'message': 'File Upload Successful',
+            'filename':   filename,
+            'description': description
+        }]
+        return jsonify(upload = tasks)
+       
+    """else:
+        return '''{
+            "errors":'''+[{form_errors(form)},{}
+        ]+'''}'''"""
 
 ###
 # The functions below should be applicable to all Flask apps.
@@ -77,3 +109,4 @@ def page_not_found(error):
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port="8080")
+
