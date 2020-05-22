@@ -1,23 +1,56 @@
 /* Add your Application JavaScript */
 const Upload =Vue.component('upload-form',{
     template:`
-    <div>
+    
+    <div> 
+        <span v-if="status == 'fine'" >
+          <div class = "success">{{state}}   {{file}}<br>
+          {{notes}}
+
+          </div>
+        </span>
+        <span v-if="status == 'wrong'">
+        <div class = "failure">
+        <li v-for="error in state">{{ error }}</p>
+        </li>
+        </div>
+        </span>
+        <br>
+       
         <form @submit.prevent="uploadPhoto" enctype="multipart/form-data" id="uploadForm">
             <div class="form-group">
+            
                 <label for="description">Description</label>
                 <textarea class="form-control" name="description" id="description"></textarea>
             </div>
             <div class="form-group">
-                <label for="photo">Photo</label>
-                <input name="photo" id="photo" type="file">
+                <label for="photo">Photo Upload</label>
+                <br>
+                <input name="photo" id="photo"  placeholder = "Browse" type="file">
+                <!--input type="reset"-->
             </div>
+            
+            
              <button type=submit class="btn btn-primary" > Submit </button>
+
         </form>
     </div>
     `,
+    data: function() {
+return {
+  status: null,
+ state: '',
+ file: '',
+ notes:'',
+ error: null
+  }
+    },
+    
     methods: {
         uploadPhoto: function(){
             self = this;
+            self.file = ''
+            self.notes = ''
             let uploadForm = document.getElementById('uploadForm');
             let form_data = new FormData(uploadForm); 
               fetch("/api/upload", {
@@ -29,16 +62,37 @@ const Upload =Vue.component('upload-form',{
                 },
                 credentials: 'same-origin' 
                })
+                
                 .then(function (response) {
+                  
+                 
                 return response.json();
                 })
                 .then(function (jsonResponse) {
+                  console.log(jsonResponse)
+                  self.status = jsonResponse.state
+                if(jsonResponse.state == "fine"){
                 // display a success message
-                console.log(jsonResponse)              
+                //self.d = jsonResponse['message']
+                
+                self.file = jsonResponse.upload[0].filename
+                self.notes = jsonResponse.upload[0].description 
+                self.state = jsonResponse.upload[0].message + " for"
+                      }
+                else{
+                  self.state = jsonResponse.error
+
+                }
+                    
                 })
                 .catch(function (error) {
+                
                 console.log(error);
-                });
+                });/*
+                .then(function(){
+                  router.push({ path: '/'})
+                })*/
+                
         }
     },
  

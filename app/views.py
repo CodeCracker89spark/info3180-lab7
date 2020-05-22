@@ -6,9 +6,11 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 import os
+
 from app import app
 from flask import jsonify
 from flask import render_template, request
+#from script_python import kernel as K
 from app.forms import UploadForm
 from werkzeug.utils import secure_filename
 from app.__init__ import UPLOAD_FOLDER
@@ -33,6 +35,7 @@ def index(path):
     Also we will render the initial webpage and then let VueJS take control.
     """
     return render_template('index.html')
+
 
 
 # Here we define a function to collect form errors from Flask-WTF
@@ -70,7 +73,17 @@ def upload():
             'filename':   filename,
             'description': description
         }]
-        return jsonify(upload = tasks)
+        status = "fine"
+       
+         #some var from flask
+        
+        
+        return jsonify(upload = tasks,state=status)
+
+    else:
+        errors = form_errors(form)
+        status = "wrong"
+        return jsonify(error=errors,state=status)
        
     """else:
         return '''{
